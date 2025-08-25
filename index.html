@@ -1,104 +1,132 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Рецепт x2</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Калькулятор ингредиентов</title>
   <link rel="icon" type="image/png" href="img/favicon/favicon-96x96.png" sizes="96x96" />
   <link rel="icon" type="image/svg+xml" href="img/favicon/favicon.svg" />
   <link rel="shortcut icon" href="img/favicon/favicon.ico" />
   <link rel="apple-touch-icon" sizes="180x180" href="img/favicon/apple-touch-icon.png" />
   <link rel="manifest" href="img/favicon/site.webmanifest" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
 
   <div class="container mt-4">
     <div class="row">
       <div class="col">
-        
-        <!-- Заголовок и краткое описание -->
-        <h2 class="text-center display-6">Увеличить или уменьшить ингредиенты в рецепте</h2>
-        <p class="text-center fw-medium mb-4">Онлайн калькулятор поможет увеличить или уменьшить количество ингредиентов в рецепте.</p>
+
+        <!-- Заголовок -->
+        <h2 class="text-center display-6">Калькулятор ингредиентов</h2>
+        <p class="text-center text-muted mb-4">Увеличьте или уменьшите рецепт в нужное число раз</p>
 
         <!-- Инструкция -->
         <div class="accordion mb-4" id="accordion1">
           <div class="accordion-item">
             <h2 class="accordion-header">
-              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne">
                 Инструкция
               </button>
             </h2>
             <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#accordion1">
               <div class="accordion-body">
                 <ul class="list-group">
-                  <li class="list-group-item">Заполните название, количество и единицу измерения для ингредиента, нажмите кнопку "Добавить". Если количество не заполнять или установить равным нулю, то получится значение - по вкусу.</li>
-                  <li class="list-group-item">Если нужно удалить ингредиент, то нажмите на значок удаления ингредиента, который добавили ранее.</li>
-                  <li class="list-group-item">Выберите уменьшить или увеличить количество ингредиентов и введите во сколько раз. Нажмите кнопку "Вычислить", чтобы получить новый рецепт.</li>
-                  <li class="list-group-item">Введите название рецепта нажав на заголовок с соответствующим текстом.</li>
-                  <li class="list-group-item">Можно сделать скриншот готового результата или скопировть в буфер обмена.</li>
-                  <li class="list-group-item">Если нашли ошибку в тексте или работе программы, а также с вопросами и пожеланиями о данном инструменте, пожалуйста <a href="mailto:ismail_2016@mail.ru?subject=Калькулятор ингредиентов в рецепте">напишите автору</a>.</li>
-                  <li class="list-group-item"><a href="https://github.com/morphIsmail/ingredients_in_recipe">Код и инструкция на GitHub</a></li>
+                  <li class="list-group-item">Введите название, количество и единицу измерения, нажмите "Добавить".</li>
+                  <li class="list-group-item">Голосом: нажмите микрофон и скажите "мука 200 г", "соль по вкусу".</li>
+                  <li class="list-group-item">Удалите ингредиент кнопкой 🗑️.</li>
+                  <li class="list-group-item">Измените рецепт: укажите старое и новое количество порций, или множитель вручную.</li>
+                  <li class="list-group-item">Сохраните рецепт в шаблоны и загружайте позже.</li>
+                  <li class="list-group-item">Скопируйте или сделайте скриншот готового рецепта.</li>
                 </ul>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Настройки приложения -->
+        <!-- Настройки -->
         <div class="card mb-4">
           <div class="card-body">
             <h3 class="h5 mb-3">Настройки</h3>
-            <div class="btn-group" role="group" aria-label="Font Size">
-              <button id="decrease_fs_btn" type="button" class="btn btn-primary"><i class="bi bi-dash-circle"></i></button>
-              <button id="increase_fs_btn" type="button" class="btn btn-primary"><i class="bi bi-plus-circle"></i></button>
+            <div class="btn-group mb-2" role="group">
+              <button id="decrease_fs_btn" class="btn btn-outline-primary"><i class="bi bi-dash"></i></button>
+              <button id="increase_fs_btn" class="btn btn-outline-primary"><i class="bi bi-plus"></i></button>
             </div>
-            <button class="btn btn-outline-primary" id="change_theme_btn">Тема</button>
+            <button id="change_theme_btn" class="btn btn-outline-primary ms-2">Тема</button>
+            <button id="voice_btn" class="btn btn-outline-success ms-2"><i class="bi bi-mic"></i></button>
           </div>
         </div>
-        
-        <!-- Добавить ингредиенты -->
+
+        <!-- Ввод ингредиентов -->
         <div class="card mb-4">
           <div class="card-body">
             <h3 class="h5 mb-3">Ингредиенты</h3>
-            <input id="item_name" type="text" placeholder="Название" class="form-control mb-2">
-            <input id="item_count" type="number" placeholder="Кол-во" class="form-control mb-2">
-            <select id="item_type" class="form-select mb-2">
-              <option value="г.">г.</option>
-              <option value="кг.">кг.</option>
-              <option value="мл.">мл.</option>
-              <option value="л.">л.</option>
-              <option value="ч. л.">ч. л.</option>
-              <option value="ст. л.">ст. л.</option>
-              <option value="шт.">шт.</option>
-            </select>
-            <button id="add_btn" class="btn btn-primary mb-3">Добавить</button>    
+            <div class="input-group mb-2">
+              <input id="item_name" type="text" placeholder="Название (например, мука)" class="form-control" list="suggestions">
+              <datalist id="suggestions">
+                <option value="Мука">
+                <option value="Сахар">
+                <option value="Соль">
+                <option value="Вода">
+                <option value="Молоко">
+                <option value="Яйца">
+                <option value="Масло">
+                <option value="Сметана">
+              </datalist>
+              <input id="item_count" type="number" placeholder="Кол-во" class="form-control w-50">
+              <select id="item_type" class="form-select w-50">
+                <option value="г.">г.</option>
+                <option value="кг.">кг.</option>
+                <option value="мл.">мл.</option>
+                <option value="л.">л.</option>
+                <option value="ч. л.">ч. л.</option>
+                <option value="ст. л.">ст. л.</option>
+                <option value="шт.">шт.</option>
+              </select>
+            </div>
+            <button id="add_btn" class="btn btn-primary mb-2 w-100">Добавить</button>
+            <button id="save_template_btn" class="btn btn-outline-secondary btn-sm w-100 mb-2">Сохранить как шаблон</button>
             <ul class="list-group list-group-flush" id="original_recipe"></ul>
           </div>
         </div>
 
-        <!-- Изменить рецепт -->
+        <!-- Порции или множитель -->
         <div class="card mb-4">
           <div class="card-body">
-            <h3 class="h5 mb-3">Изменить рецепт</h3>
-            <select id="how_many_times_to_change" class="form-select mb-2">
-              <option value="1">Уменьшить во сколько раз</option>
-              <option value="2">Увеличить во сколько раз</option>
-            </select>
-            <input id="how_many_times" type="number" placeholder="4" value="4" class="form-control mb-2">
-            <button id="calculate_btn" class="btn btn-primary mb-3">Вычислить</button>
+            <h3 class="h5 mb-3">Порции</h3>
+            <div class="input-group mb-2">
+              <input id="portions_old" type="number" placeholder="Было порций" class="form-control">
+              <input id="portions_new" type="number" placeholder="Стало порций" class="form-control">
+              <button id="calculate_by_portions" class="btn btn-outline-primary">Рассчитать</button>
+            </div>
+            <h3 class="h5 mb-3">Или вручную</h3>
+            <input id="how_many_times" type="number" placeholder="Множитель (например, 2)" value="2" class="form-control mb-2">
+            <button id="calculate_btn" class="btn btn-primary w-100">Вычислить</button>
           </div>
         </div>
 
-        <!-- Измененный рецепт -->
+        <!-- Загрузка шаблонов -->
         <div class="card mb-4">
           <div class="card-body">
-            <div id="modified_recipe" class="mb-3">
-              <h3 id="recipe_name" class="h5 mb-3">Название рецепта</h3>
+            <h3 class="h5 mb-3">Шаблоны</h3>
+            <select id="templates" class="form-select mb-2">
+              <option value="">Выберите шаблон...</option>
+            </select>
+            <button id="load_template_btn" class="btn btn-outline-primary w-100">Загрузить</button>
+          </div>
+        </div>
+
+        <!-- Результат -->
+        <div class="card mb-4">
+          <div class="card-body">
+            <div id="modified_recipe" class="mb-3" style="display: none;">
+              <h3 id="recipe_name" class="h5 mb-3 editable">Название рецепта</h3>
               <ul id="modified_recipe_body" class="list-group list-group-flush"></ul>
             </div>
-            <button id="copy_btn" class="btn btn-primary"><i class="bi bi-copy"></i></button>
+            <button id="copy_btn" class="btn btn-primary w-100"><i class="bi bi-copy"></i> Скопировать</button>
+            <button id="clear_btn" class="btn btn-outline-danger btn-sm mt-2 w-100">Очистить всё</button>
           </div>
         </div>
 
@@ -106,16 +134,23 @@
     </div>
   </div>
 
-  <!-- Модальное окно для всплывающих предупреждений -->
+  <!-- Toast уведомления -->
+  <div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="toast-body"></div>
+    </div>
+  </div>
+
+  <!-- Модальное окно -->
   <div class="modal" tabindex="-1" id="warning-modal">
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title"></h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          <h5 class="modal-title">Внимание</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
         </div>
         <div class="modal-body">
-          <p id="warning-modal-text">Предупреждение!</p>
+          <p id="warning-modal-text"></p>
         </div>
       </div>
     </div>
