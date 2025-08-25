@@ -1,257 +1,311 @@
-/**
- * Конфигурация приложения
- */
+// Конфиг
 const CONFIG = {
-  fontSize: {
-    min: 10,
-    max: 20,
-    step: 1
-  },
+  fontSize: { min: 10, max: 20, step: 1 },
   theme: {
-    dark: {
-      theme: 'dark',
-      icon: '<i class="bi bi-sun-fill"></i>',
-      storageKey: 'theme'
-    },
-    light: {
-      theme: 'light',
-      icon: '<i class="bi bi-moon-stars-fill"></i>',
-      storageKey: 'theme'
-    }
-  }
+    dark: { theme: 'dark', icon: '<i class="bi bi-sun-fill"></i>' },
+    light: { theme: 'light', icon: '<i class="bi bi-moon-stars-fill"></i>' }
+  },
+  suggestions: ['Мука', 'Сахар', 'Соль', 'Вода', 'Молоко', 'Яйца', 'Масло', 'Сметана']
 };
 
-/**
- * DOM элементы
- */
+// DOM
+const $ = (id) => document.getElementById(id);
 const elements = {
-  // Управление шрифтом
-  decreaseFontBtn: document.getElementById('decrease_fs_btn'),
-  increaseFontBtn: document.getElementById('increase_fs_btn'),
-  
-  // Управление темой
-  themeToggle: document.getElementById('change_theme_btn'),
+  // Шрифт и тема
+  decreaseFontBtn: $('decrease_fs_btn'),
+  increaseFontBtn: $('increase_fs_btn'),
+  themeToggle: $('change_theme_btn'),
   htmlElement: document.documentElement,
-  
-  // Управление рецептами
-  recipeName: document.getElementById('recipe_name'),
-  addBtn: document.getElementById('add_btn'),
-  originalRecipe: document.getElementById('original_recipe'),
-  modifiedRecipe: document.getElementById('modified_recipe'),
-  modifiedRecipeBody: document.getElementById('modified_recipe_body'),
-  calculateBtn: document.getElementById('calculate_btn'),
-  copyBtn: document.getElementById('copy_btn'),
-  
-  // Поля ввода
-  itemName: document.getElementById('item_name'),
-  itemCount: document.getElementById('item_count'),
-  itemType: document.getElementById('item_type'),
-  ratioType: document.getElementById('how_many_times_to_change'),
-  ratioValue: document.getElementById('how_many_times')
+  voiceBtn: $('voice_btn'),
+
+  // Ингредиенты
+  itemName: $('item_name'),
+  itemCount: $('item_count'),
+  itemType: $('item_type'),
+  addBtn: $('add_btn'),
+  originalRecipe: $('original_recipe'),
+
+  // Порции
+  portionsOld: $('portions_old'),
+  portionsNew: $('portions_new'),
+  calculateByPortions: $('calculate_by_portions'),
+  howManyTimes: $('how_many_times'),
+  calculateBtn: $('calculate_btn'),
+
+  // Шаблоны
+  templates: $('templates'),
+  saveTemplateBtn: $('save_template_btn'),
+  loadTemplateBtn: $('load_template_btn'),
+
+  // Результат
+  recipeName: $('recipe_name'),
+  modifiedRecipe: $('modified_recipe'),
+  modifiedRecipeBody: $('modified_recipe_body'),
+  copyBtn: $('copy_btn'),
+  clearBtn: $('clear_btn')
 };
 
-/**
- * Состояние приложения
- */
-let state = {
-  recipe: []
-};
+// Состояние
+let state = { recipe: [], templates: {} };
 
-/**
- * Управление шрифтом
- */
-function changeFontSize(direction) {
-  const currentSize = parseInt(window.getComputedStyle(document.body).fontSize);
-  let newSize = currentSize;
-
-  if (direction === 'decrease' && currentSize > CONFIG.fontSize.min) {
-    newSize = currentSize - CONFIG.fontSize.step;
-  } else if (direction === 'increase' && currentSize < CONFIG.fontSize.max) {
-    newSize = currentSize + CONFIG.fontSize.step;
-  }
-
-  if (newSize !== currentSize) {
-    document.body.style.fontSize = `${newSize}px`;
-  }
+// Инициализация
+function init() {
+  loadState();
+  loadTemplates();
+  initializeTheme();
+  setupEventListeners();
+  setupVoiceInput();
+  showToast('Приложение загружено');
 }
 
-/**
- * Управление темой
- */
+// Слушатели
+function setupEventListeners() {
+  elements.decreaseFontBtn.addEventListener('click', () => changeFontSize('decrease'));
+  elements.increaseFontBtn.addEventListener('click', () => changeFontSize('increase'));
+  elements.themeToggle.addEventListener('click', toggleTheme);
+  elements.addBtn.addEventListener('click', addIngredient);
+  elements.originalRecipe.addEventListener('click', removeIngredient);
+  elements.recipeName.addEventListener('click', makeEditable);
+  elements.calculateBtn.addEventListener('click', calculateRecipe);
+  elements.calculateByPortions.addEventListener('click', calculateByPortionsHandler);
+  elements.copyBtn.addEventListener('click', copyRecipe);
+  elements.clearBtn.addEventListener('click', clearAll);
+  elements.saveTemplateBtn.addEventListener('click', saveTemplate);
+  elements.loadTemplateBtn.addEventListener('click', loadSelectedTemplate);
+}
+
+// Шрифт
+function changeFontSize(dir) {
+  const size = parseInt(getComputedStyle(document.body).fontSize);
+  const newSize = dir === 'decrease' ? Math.max(size - 1, 10) : Math.min(size + 1, 20);
+  if (newSize !== size) document.body.style.fontSize = `${newSize}px`;
+}
+
+// Тема
 function initializeTheme() {
-  const savedTheme = localStorage.getItem(CONFIG.theme.dark.storageKey);
-  const isDarkTheme = savedTheme === CONFIG.theme.dark.theme;
-  setTheme(isDarkTheme ? CONFIG.theme.dark : CONFIG.theme.light);
+  const saved = localStorage.getItem('theme') === 'dark';
+  setTheme(saved ? CONFIG.theme.dark : CONFIG.theme.light);
 }
-
 function setTheme(theme) {
   elements.htmlElement.setAttribute('data-bs-theme', theme.theme);
   elements.themeToggle.innerHTML = theme.icon;
-  localStorage.setItem(theme.storageKey, theme.theme);
+  localStorage.setItem('theme', theme.theme);
 }
-
 function toggleTheme() {
-  const isDarkTheme = elements.htmlElement.getAttribute('data-bs-theme') === CONFIG.theme.dark.theme;
-  setTheme(isDarkTheme ? CONFIG.theme.light : CONFIG.theme.dark);
+  const isDark = elements.htmlElement.getAttribute('data-bs-theme') === 'dark';
+  setTheme(isDark ? CONFIG.theme.light : CONFIG.theme.dark);
 }
 
-/**
- * Управление рецептами
- */
-function renderRecipeList(container, recipeList, action, modifier, isNew = false) {
-  const containerElement = document.getElementById(container);
-  containerElement.innerHTML = '';
-
-  recipeList.forEach(item => {
-    let count = item.count || 'по вкусу';
-    let type = item.count ? item.type : '';
-
-    if (count !== 'по вкусу') {
-      if (action === "*") {
-        count *= modifier;
-      } else if (action === "/") {
-        count /= modifier;
-      }
-    }
-
-    const li = document.createElement('li');
-    li.classList.add("list-group-item")
-    li.innerHTML = isNew
-      ? `<div><div>${item.name} ${count} ${type}</div></div>`
-      : `<div class="d-flex justify-content-between">
-           <div>${item.name} ${count} ${type}</div>
-           <button class="remove-btn btn btn-danger btn-sm" data-name="${item.name}">
-             <i class="bi bi-trash-fill" data-name="${item.name}"></i>
-           </button>
-         </div>`;
-    
-    containerElement.appendChild(li);
-  });
-}
-
+// Рецепт
 function addIngredient() {
   const name = elements.itemName.value.trim();
   const count = elements.itemCount.value;
   const type = elements.itemType.value;
 
-  if (!name) {
-    const myModal = new bootstrap.Modal('#warning-modal')
-    document.getElementById('warning-modal-text').textContent = 'Введите название ингредиента!'
-    myModal.show()
+  if (!name) return showModal('Введите название');
+  if (state.recipe.some(i => i.name === name)) return showModal('Уже есть');
+
+  state.recipe.push({ name, count: count || 'по вкусу', type: count ? type : '' });
+  renderOriginalRecipe();
+  saveState();
+  clearInputs();
+}
+
+function removeIngredient(e) {
+  if (!e.target.dataset.name) return;
+  const name = e.target.dataset.name;
+  state.recipe = state.recipe.filter(i => i.name !== name);
+  renderOriginalRecipe();
+  saveState();
+}
+
+function renderOriginalRecipe() {
+  elements.originalRecipe.innerHTML = '';
+  state.recipe.forEach(item => {
+    const li = document.createElement('li');
+    li.classList.add('list-group-item', 'd-flex', 'justify-content-between');
+    li.innerHTML = `
+      <span>${item.name} ${item.count !== 'по вкусу' ? item.count + ' ' + item.type : 'по вкусу'}</span>
+      <button class="btn btn-sm btn-danger" data-name="${item.name}">
+        <i class="bi bi-trash" data-name="${item.name}"></i>
+      </button>
+    `;
+    elements.originalRecipe.appendChild(li);
+  });
+}
+
+// Расчёт
+function calculateRecipe() {
+  const ratio = parseFloat(elements.howManyTimes.value);
+  if (!ratio || ratio <= 0) return showModal('Введите множитель > 0');
+  renderModifiedRecipe(ratio);
+}
+
+function calculateByPortionsHandler() {
+  const old = parseFloat(elements.portionsOld.value);
+  const newP = parseFloat(elements.portionsNew.value);
+  if (!old || !newP) return showModal('Введите обе порции');
+  const ratio = newP / old;
+  elements.howManyTimes.value = ratio.toFixed(2);
+  renderModifiedRecipe(ratio);
+}
+
+function renderModifiedRecipe(ratio) {
+  elements.modifiedRecipe.style.display = 'block';
+  elements.modifiedRecipeBody.innerHTML = '';
+
+  state.recipe.forEach(item => {
+    let count = item.count;
+    if (count !== 'по вкусу') {
+      count = (parseFloat(count) * ratio).toFixed(2);
+      count = Number.isInteger(count) ? parseInt(count) : parseFloat(count);
+    }
+    const li = document.createElement('li');
+    li.classList.add('list-group-item');
+    li.textContent = `${item.name} ${count} ${item.count !== 'по вкусу' ? item.type : ''}`;
+    elements.modifiedRecipeBody.appendChild(li);
+  });
+}
+
+// Редактирование названия
+function makeEditable() {
+  const el = elements.recipeName;
+  const input = document.createElement('input');
+  input.value = el.textContent;
+  input.className = 'form-control form-control-sm';
+  el.innerHTML = '';
+  el.appendChild(input);
+  input.focus();
+
+  const save = () => {
+    el.textContent = input.value || 'Название рецепта';
+    input.remove();
+  };
+
+  input.addEventListener('blur', save);
+  input.addEventListener('keypress', e => e.key === 'Enter' && save());
+}
+
+// Копирование
+function copyRecipe() {
+  navigator.clipboard.writeText(elements.modifiedRecipe.innerText)
+    .then(() => showToast('Скопировано!'))
+    .catch(() => showModal('Ошибка копирования'));
+}
+
+// Очистка
+function clearAll() {
+  if (confirm('Очистить всё?')) {
+    state.recipe = [];
+    renderOriginalRecipe();
+    elements.modifiedRecipe.style.display = 'none';
+    saveState();
+  }
+}
+
+// Шаблоны
+function saveTemplate() {
+  const name = prompt('Название шаблона:')?.trim();
+  if (!name || state.recipe.length === 0) return;
+  state.templates[name] = [...state.recipe];
+  localStorage.setItem('recipeTemplates', JSON.stringify(state.templates));
+  loadTemplates();
+  showToast(`Шаблон "${name}" сохранён`);
+}
+
+function loadTemplates() {
+  const saved = localStorage.getItem('recipeTemplates');
+  state.templates = saved ? JSON.parse(saved) : {};
+  const sel = elements.templates;
+  sel.innerHTML = '<option value="">Выберите шаблон...</option>';
+  Object.keys(state.templates).forEach(key => {
+    const opt = document.createElement('option');
+    opt.value = key;
+    opt.textContent = key;
+    sel.appendChild(opt);
+  });
+}
+
+function loadSelectedTemplate() {
+  const name = elements.templates.value;
+  if (!name) return;
+  state.recipe = [...state.templates[name]];
+  renderOriginalRecipe();
+  saveState();
+  showToast(`Загружен шаблон: ${name}`);
+}
+
+// Голосовой ввод
+function setupVoiceInput() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    elements.voiceBtn.disabled = true;
     return;
   }
 
-  if (state.recipe.some(item => item.name === name)) {
-    const myModal = new bootstrap.Modal('#warning-modal')
-    document.getElementById('warning-modal-text').textContent = 'Такой ингредиент уже есть!'
-    myModal.show()
-    elements.itemName.value = '';
-    elements.itemCount.value = '';
-    return;
-  }
+  const recognition = new SpeechRecognition();
+  recognition.lang = 'ru-RU';
 
-  state.recipe.push({
-    name,
-    count: count || 'по вкусу',
-    type: count ? type : ''
+  elements.voiceBtn.addEventListener('click', () => {
+    recognition.start();
+    elements.voiceBtn.classList.add('btn-danger');
   });
 
-  renderRecipeList('original_recipe', state.recipe, '*', 1);
+  recognition.onresult = (event) => {
+    const transcript = event.results[0][0].transcript.toLowerCase();
+    parseVoiceInput(transcript);
+    elements.voiceBtn.classList.remove('btn-danger');
+  };
+
+  recognition.onerror = () => elements.voiceBtn.classList.remove('btn-danger');
+}
+
+function parseVoiceInput(text) {
+  const match = text.match(/(.+?)\s+(\d+)\s+(.+)/) || text.match(/(.+?)\s+по вкусу/);
+  if (match) {
+    elements.itemName.value = match[1].trim();
+    if (match[2]) {
+      elements.itemCount.value = match[2];
+      elements.itemType.value = match[3] || 'г.';
+    } else {
+      elements.itemCount.value = '';
+    }
+    addIngredient();
+  } else {
+    showModal('Не распознано. Пример: "мука 200 г" или "соль по вкусу"');
+  }
+}
+
+// Уведомления
+function showModal(msg) {
+  const modal = new bootstrap.Modal('#warning-modal');
+  $('warning-modal-text').textContent = msg;
+  modal.show();
+}
+
+function showToast(msg) {
+  const toast = new bootstrap.Toast('#toast');
+  document.querySelector('#toast .toast-body').textContent = msg;
+  toast.show();
+}
+
+// Сохранение
+function saveState() {
+  localStorage.setItem('recipeState', JSON.stringify(state.recipe));
+}
+
+function loadState() {
+  const saved = localStorage.getItem('recipeState');
+  if (saved) {
+    state.recipe = JSON.parse(saved);
+    renderOriginalRecipe();
+  }
+}
+
+function clearInputs() {
   elements.itemName.value = '';
   elements.itemCount.value = '';
 }
 
-function removeIngredient(name) {
-  state.recipe = state.recipe.filter(item => item.name !== name);
-  renderRecipeList('original_recipe', state.recipe, '*', 1);
-}
-
-function updateRecipeName() {
-  // Функция для редактирования текста
-  function makeEditable(element) {
-    element.addEventListener('click', function() {
-      const currentText = this.textContent;
-      const input = document.createElement('input');
-      input.value = currentText;
-      input.className = 'form-control';
-      
-      this.innerHTML = '';
-      this.appendChild(input);
-      input.focus();
-
-      // Сохраняем изменения при нажатии Enter или потере фокуса
-      input.addEventListener('keypress', function(e) {
-          if (e.key === 'Enter') {
-            saveChanges();
-          }
-      });
-
-      input.addEventListener('blur', saveChanges);
-
-      function saveChanges() {
-        if(!input.value) input.value = 'Название рецепта'
-        element.textContent = input.value;
-      }
-    });
-  }
-
-  // Применяем функцию к элементам
-  const editableText = document.getElementById('recipe_name');
-  makeEditable(editableText);
-}
-
-function calculateRecipe() {
-  elements.modifiedRecipe.style.display = 'block';
-  elements.modifiedRecipeBody.innerHTML = '';
-  
-  const ratioType = +elements.ratioType.value;
-  const ratio = +elements.ratioValue.value;
-  
-  if (!ratio) {
-    const myModal = new bootstrap.Modal('#warning-modal')
-    document.getElementById('warning-modal-text').textContent = 'Введите любое число кроме нуля!'
-    myModal.show()
-    return;
-  }
-
-  const action = ratioType === 1 ? '/' : '*';
-  renderRecipeList('modified_recipe_body', state.recipe, action, ratio, true);
-}
-
-async function copyRecipe() {
-  try {
-    await navigator.clipboard.writeText(elements.modifiedRecipe.innerText);
-    const myModal = new bootstrap.Modal('#warning-modal')
-    document.getElementById('warning-modal-text').textContent = 'Рецепт успешно скопирован!'
-    myModal.show()
-  } catch (err) {
-    console.error('Не удалось скопировать текст:', err);
-  }
-}
-
-/**
- * Инициализация приложения
- */
-function init() {
-  // Управление шрифтом
-  elements.decreaseFontBtn.addEventListener('click', () => changeFontSize('decrease'));
-  elements.increaseFontBtn.addEventListener('click', () => changeFontSize('increase'));
-
-  // Управление темой
-  initializeTheme();
-  elements.themeToggle.addEventListener('click', toggleTheme);
-
-  // Управление рецептами
-  elements.addBtn.addEventListener('click', addIngredient);
-  elements.originalRecipe.addEventListener('click', (e) => {
-    if (e.target.dataset.name) {
-      removeIngredient(e.target.dataset.name);
-    }
-  });
-  elements.recipeName.addEventListener('click', updateRecipeName);
-  elements.calculateBtn.addEventListener('click', calculateRecipe);
-  elements.copyBtn.addEventListener('click', copyRecipe);
-}
-
-// Запуск приложения
+// Запуск
 init();
